@@ -1,0 +1,48 @@
+import java.io.*;
+import java.util.Date;
+
+public class BackupUtility {
+    public static void main(String[] args) {
+        String sourceDirectory = "/path/to/source/directory";
+        String backupDirectory = "/path/to/backup/directory";
+        
+        // Crear el directorio de respaldo si no existe
+        File backupDir = new File(backupDirectory);
+        if (!backupDir.exists()) {
+            backupDir.mkdir();
+        }
+        
+        // Crear un nombre de archivo único para la copia de seguridad
+        String filename = "backup_" + (new Date()).getTime() + ".zip";
+        
+        try {
+            // Crear un objeto ZipOutputStream para escribir en el archivo de copia de seguridad
+            FileOutputStream fos = new FileOutputStream(new File(backupDirectory, filename));
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            
+            // Recorrer el directorio fuente y agregar cada archivo a la copia de seguridad
+            File sourceDir = new File(sourceDirectory);
+            for (String file : sourceDir.list()) {
+                FileInputStream fis = new FileInputStream(new File(sourceDirectory, file));
+                ZipEntry zipEntry = new ZipEntry(file);
+                zos.putNextEntry(zipEntry);
+                
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = fis.read(buffer)) > 0) {
+                    zos.write(buffer, 0, length);
+                }
+                
+                fis.close();
+                zos.closeEntry();
+            }
+            
+            zos.close();
+            fos.close();
+            
+            System.out.println("Copia de seguridad creada con éxito: " + filename);
+        } catch (IOException e) {
+            System.out.println("Error al crear la copia de seguridad: " + e.getMessage());
+        }
+    }
+}
